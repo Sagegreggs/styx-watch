@@ -1,0 +1,460 @@
+<title>Styx Watch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a river hero flows into a working console, then a depth gauge, coverage table and how-to. Single deliberate underworld look. */
+:root {
+  color-scheme: dark;
+  --abyss: #0a0e12;      /* ground: the river at night */
+  --murk: #111d1d;       /* raised surfaces */
+  --deep: #0c1517;       /* console wells */
+  --reed: #2a403e;       /* borders, rules */
+  --bone: #ddd6c7;       /* text */
+  --ash: #929c94;        /* secondary text */
+  --lantern: #e0a852;    /* Charon's lantern, the one accent */
+  --water: #62aca3;      /* healthy flow / clean */
+  --blood: #cc5146;      /* scam-linked / damned */
+  --display: "Marcellus SC", "Trajan Pro", Georgia, serif;
+  --body: "Spectral", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--abyss); color: var(--bone); font: 17px/1.6 var(--body); overflow-x: hidden; }
+.band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.inner { max-width: 1140px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: .05em; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.1; }
+h3 { font-size: 1.15rem; }
+p { margin: 0; }
+a { color: var(--lantern); }
+.eyebrow { font: 500 .72rem/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ash); }
+.lede { color: var(--ash); max-width: 62ch; }
+:focus-visible { outline: 2px solid var(--lantern); outline-offset: 2px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 500 .95rem/1 var(--mono); letter-spacing: .03em; padding: 14px 18px; border-radius: 2px; border: 1px solid var(--lantern); text-decoration: none; cursor: pointer; }
+.btn.primary { background: var(--lantern); color: var(--abyss); }
+.btn.ghost { background: transparent; color: var(--lantern); }
+.btn:hover { filter: brightness(1.12); }
+
+/* Hero */
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--reed); }
+#heroRiver { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero .inner { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; padding-block: 64px 56px; align-items: end; }
+.hero h1 { font-size: clamp(3rem, 9vw, 6.4rem); line-height: .92; }
+.hero h1 span { color: var(--lantern); display: block; }
+.hero .copy { display: grid; gap: 22px; }
+.hero .pitch { font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.45; max-width: 34ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; font: .75rem var(--mono); color: var(--ash); }
+.chips span { border: 1px solid var(--reed); padding: 5px 9px; border-radius: 2px; background: color-mix(in srgb, var(--abyss) 70%, transparent); }
+.snapshot { background: color-mix(in srgb, var(--murk) 88%, transparent); border: 1px solid var(--reed); padding: 18px; display: grid; gap: 10px; border-radius: 2px; backdrop-filter: blur(2px); }
+.snapshot .big { font: 400 2rem/1 var(--display); color: var(--bone); font-variant-numeric: tabular-nums; }
+.snapshot dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: .95rem; }
+.snapshot dt { color: var(--ash); } .snapshot dd { margin: 0; text-align: right; }
+.snapshot .src { font: .72rem/1.4 var(--mono); color: var(--ash); }
+
+section.band { padding-block: 72px; }
+.head { display: grid; gap: 10px; margin-bottom: 28px; }
+
+/* Console */
+.console { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); border: 1px solid var(--reed); border-radius: 2px; background: var(--murk); }
+.side { border-right: 1px solid var(--reed); padding: 18px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.tools { display: grid; gap: 6px; }
+.tool { text-align: left; background: transparent; color: var(--bone); border: 1px solid var(--reed); border-radius: 2px; padding: 10px 12px; cursor: pointer; display: grid; gap: 3px; font: inherit; }
+.tool b { font: 500 .85rem var(--mono); color: var(--lantern); font-weight: 500; }
+.tool span { font-size: .85rem; color: var(--ash); line-height: 1.35; }
+.tool[aria-pressed="true"] { border-color: var(--lantern); background: color-mix(in srgb, var(--lantern) 9%, transparent); }
+label.lbl { display: grid; gap: 6px; }
+textarea { width: 100%; min-height: 128px; resize: vertical; background: var(--deep); color: var(--bone); border: 1px solid var(--reed); border-radius: 2px; padding: 12px; font: .85rem/1.5 var(--mono); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { font: .74rem var(--mono); background: transparent; color: var(--ash); border: 1px dashed var(--reed); border-radius: 2px; padding: 6px 9px; cursor: pointer; }
+.presets button:hover { color: var(--bone); border-color: var(--ash); }
+.presets i { font-style: normal; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+#runBtn { justify-content: center; width: 100%; }
+.err { color: var(--blood); font: .82rem/1.4 var(--mono); }
+.out { display: grid; grid-template-rows: auto auto 1fr; min-width: 0; }
+.out-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--reed); font: .8rem var(--mono); color: var(--ash); }
+.pill { font: 500 .7rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 6px 8px; border: 1px solid currentColor; border-radius: 2px; }
+.pill.ok { color: var(--water); } .pill.bad { color: var(--blood); } .pill.idle { color: var(--ash); } .pill.run { color: var(--lantern); }
+.verdict { font: 400 1.05rem/1 var(--display); letter-spacing: .08em; }
+.verdict.clean { color: var(--water); } .verdict.tainted { color: var(--lantern); } .verdict.damned { color: var(--blood); }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--reed); overflow-x: auto; }
+.tabs button { font: .8rem var(--mono); background: transparent; color: var(--ash); border: 0; border-bottom: 2px solid transparent; padding: 12px 16px; cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--bone); border-bottom-color: var(--lantern); }
+.pane { min-width: 0; padding: 0; }
+#miniMap { display: block; width: 100%; height: 230px; border-bottom: 1px solid var(--reed); background: var(--deep); }
+pre { margin: 0; padding: 18px; font: .8rem/1.55 var(--mono); color: var(--bone); overflow-x: auto; white-space: pre; min-height: 260px; }
+pre .dim { color: var(--ash); }
+.note { font: .78rem/1.5 var(--mono); color: var(--ash); padding: 12px 18px; border-top: 1px solid var(--reed); }
+.recorded { display: inline-flex; gap: 6px; align-items: center; }
+.recorded::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--lantern); }
+
+/* What a scan shows */
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.trio > div { display: grid; gap: 10px; align-content: start; border-top: 1px solid var(--reed); padding-top: 16px; }
+.trio code { font: .78rem/1.5 var(--mono); color: var(--lantern); white-space: pre-wrap; word-break: break-word; }
+
+/* Depth gauge */
+.gauge { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--reed); border-radius: 2px; overflow: hidden; }
+.gauge > div { padding: 16px 12px 14px; display: grid; gap: 8px; align-content: start; border-right: 1px solid var(--reed); position: relative; }
+.gauge > div:last-child { border-right: 0; }
+.gauge .flow { height: 5px; background: var(--water); border-radius: 2px; opacity: .85; }
+.gauge .n { font: 500 .78rem var(--mono); color: var(--ash); font-variant-numeric: tabular-nums; }
+.gauge .nk { font: 400 1rem/1.15 var(--display); letter-spacing: .03em; }
+.gauge .st { font: .7rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ash); }
+.gauge .hl { background: color-mix(in srgb, var(--lantern) 8%, transparent); }
+.gauge .hl .nk { color: var(--lantern); }
+.lakes { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; font-size: .92rem; color: var(--ash); }
+.lakes span { display: inline-flex; align-items: center; gap: 8px; }
+.lakes i { display: inline-block; border-radius: 50%; background: radial-gradient(circle, var(--lantern) 0 18%, var(--water) 40%, transparent 72%); }
+
+/* Coverage */
+.tablewrap { overflow-x: auto; border: 1px solid var(--reed); border-radius: 2px; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .95rem; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--reed); vertical-align: top; }
+th { font: 500 .72rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ash); }
+tr:last-child td { border-bottom: 0; }
+td .y { color: var(--water); } td .p { color: var(--lantern); } td .no { color: var(--ash); }
+
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; counter-reset: s; }
+.steps > div { display: grid; gap: 8px; align-content: start; }
+.steps > div::before { counter-increment: s; content: counter(s); font: 400 2.2rem/1 var(--display); color: var(--lantern); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+footer.band { padding-block: 36px 48px; border-top: 1px solid var(--reed); color: var(--ash); font-size: .88rem; }
+footer .inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 28px; }
+footer p { max-width: 70ch; }
+
+@media (max-width: 900px) {
+  .hero .inner, .split { grid-template-columns: minmax(0, 1fr); }
+  .console { grid-template-columns: minmax(0, 1fr); }
+  .side { border-right: 0; border-bottom: 1px solid var(--reed); }
+  .trio, .steps { grid-template-columns: minmax(0, 1fr); }
+  .gauge { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gauge > div { border-bottom: 1px solid var(--reed); }
+  .gauge > div:nth-child(2n) { border-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<header class="hero band">
+  <canvas id="heroRiver" aria-hidden="true"></canvas>
+  <div class="inner">
+    <div class="copy">
+      <span class="eyebrow">A PayBox plugin · MoonPay hackathon</span>
+      <h1>Styx <span>Watch</span></h1>
+      <p class="pitch">Check a crypto wallet before you send it money. See where its funds flow and whether it has touched sanctioned or scam wallets.</p>
+      <div class="cta">
+        <a class="btn primary" href="#console">Try the test console</a>
+        <a class="btn ghost" href="https://claude.ai/artifact/8fKVrzozGXdpjcoL9aCXet">Open the river map</a>
+      </div>
+      <div class="chips"><span>Bitcoin</span><span>Solana</span><span>NEAR</span><span>BNB Chain</span><span>Read-only · no private keys</span></div>
+    </div>
+    <aside class="snapshot" aria-label="Real snapshot of a Binance cold wallet">
+      <span class="eyebrow">Real snapshot · Binance cold wallet</span>
+      <div class="big">248,597.59 BTC</div>
+      <dl>
+        <dt>Water body</dt><dd>Abyss of Tartarus</dd>
+        <dt>Transactions</dt><dd>5,590 · The Underdog</dd>
+        <dt>Address</dt><dd style="font-family:var(--mono);font-size:.8rem">34xp4v…wseo</dd>
+      </dl>
+      <span class="src">Balance and count read from mempool.space on 17 Oct 2026. Label from the bitinfocharts rich list.</span>
+    </aside>
+  </div>
+</header>
+
+<main>
+  <section class="band" id="console">
+    <div class="inner">
+      <div class="head">
+        <span class="eyebrow">Test console</span>
+        <h2>Run the plugin's tools</h2>
+        <p class="lede">These are recorded runs of the real plugin bundle. Each one used made-up example wallets, so no real person or exchange is shown with invented activity. Pick a tool, choose a preset or edit the input, and press Run.</p>
+      </div>
+
+      <div class="console">
+        <div class="side">
+          <div class="tools" id="tools" role="group" aria-label="Tools"></div>
+          <label class="lbl" for="args"><span class="eyebrow">Input (JSON)</span>
+            <textarea id="args" spellcheck="false" autocomplete="off"></textarea>
+          </label>
+          <div class="presets" id="presets"></div>
+          <button class="btn primary" id="runBtn" type="button">Run tool</button>
+          <div class="err" id="inputErr" role="alert"></div>
+        </div>
+        <div class="out">
+          <div class="out-head">
+            <span id="callName">styx_scan_wallet</span>
+            <span style="display:flex;gap:10px;align-items:center"><span id="verdict" class="verdict"></span><span id="status" class="pill idle">Ready</span></span>
+          </div>
+          <div class="tabs" role="tablist">
+            <button role="tab" id="tabMap" aria-selected="true" aria-controls="paneMap">River map</button>
+            <button role="tab" id="tabJson" aria-selected="false" aria-controls="paneJson">Structured result</button>
+            <button role="tab" id="tabReq" aria-selected="false" aria-controls="paneReq">Request</button>
+          </div>
+          <div class="pane" id="paneMap" role="tabpanel"><canvas id="miniMap" aria-label="Drawing of the scanned wallet's flows"></canvas><pre id="textOut"></pre></div>
+          <div class="pane" id="paneJson" role="tabpanel" hidden><pre id="jsonOut"></pre></div>
+          <div class="pane" id="paneReq" role="tabpanel" hidden><pre id="reqOut"></pre></div>
+          <div class="note"><span class="recorded">Recorded run on example data.</span> Live scans run inside PayBox once the plugin is installed.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:0">
+    <div class="inner">
+      <div class="head"><span class="eyebrow">One scan, three answers</span><h2>What you see</h2></div>
+      <div class="trio">
+        <div><h3>The river</h3><p class="lede">Big transfers are main streams, smaller ones are streams and rivulets. When a payment splits across several wallets, each part becomes a tributary.</p><code>━━━━━━━ MAIN STREAM ⇢ out 155.51 BTC
+    ├── tributary 80 BTC
+    └── tributary 45.5 BTC</code></div>
+        <div><h3>The lake</h3><p class="lede">What the wallet holds becomes a body of water. A dry bed holds nothing. The Abyss of Tartarus holds more than ten times a main stream.</p><code>Reservoir: Lake Avernus · 18,420 SOL</code></div>
+        <div><h3>The judgement</h3><p class="lede">Every wallet it dealt with is checked against OFAC sanctions lists, the ScamSniffer blacklist and GoPlus risk flags.</p><code>Clean · Tainted · Damned</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:0">
+    <div class="inner">
+      <div class="head"><span class="eyebrow">How strong is the current?</span><h2>The depth gauge</h2><p class="lede">A wallet's activity is graded by how many transactions it has made. Under 100 is weak. Over 1,000 earns its own name.</p></div>
+      <div class="gauge" id="gauge"></div>
+      <div class="lakes" id="lakes"></div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:0">
+    <div class="inner">
+      <div class="head"><span class="eyebrow">Coverage</span><h2>What each network supports</h2><p class="lede">Styx Watch uses free, public, open sources only. Some networks share less without a paid key, and the plugin says so in every result.</p></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Network</th><th>Balance &amp; count</th><th>Fund flows</th><th>Scam &amp; sanctions checks</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>Bitcoin</td><td><span class="y">Full</span></td><td><span class="y">Last 25 transactions</span></td><td><span class="y">OFAC</span></td><td>mempool.space (open source)</td></tr>
+            <tr><td>Solana</td><td><span class="p">Count up to 1,000</span></td><td><span class="y">Last 8 transactions</span></td><td><span class="y">OFAC, GoPlus</span></td><td>Solana public RPC</td></tr>
+            <tr><td>NEAR</td><td><span class="y">Full</span></td><td><span class="y">Last 25 transactions</span></td><td><span class="no">No public list covers NEAR yet</span></td><td>FastNEAR, NearBlocks</td></tr>
+            <tr><td>BNB Chain</td><td><span class="p">Sent transactions only</span></td><td><span class="no">Needs a paid key</span></td><td><span class="y">OFAC, ScamSniffer, GoPlus</span></td><td>BNB Chain public RPC</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:0">
+    <div class="inner split">
+      <div class="head" style="margin:0"><span class="eyebrow">Getting it</span><h2>Use it in PayBox</h2><p class="lede">Styx Watch is a PayBox plugin entered in the MoonPay hackathon. Anyone can install it once PayBox approves it. Until then, the test console and river map show what it does.</p></div>
+      <div class="steps">
+        <div><h3>Install</h3><p class="lede">Find Styx Watch in PayBox's plugin list and turn it on.</p></div>
+        <div><h3>Ask</h3><p class="lede">Ask your agent to scan a wallet, or to show the great currents.</p></div>
+        <div><h3>Decide</h3><p class="lede">Read the judgement before you send anything. It never asks for your keys.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="band">
+  <div class="inner">
+    <p>A Clean judgement means none of the listed sources flag the wallet. It is not a guarantee that a wallet is safe. Exchange labels come from public explorer name tags and do not prove who owns a wallet.</p>
+    <p>Made by Greggs for the MoonPay × PayBox hackathon, October 2026.</p>
+  </div>
+</footer>
+
+<script>
+const RUNS = {"btc":{"tool":"styx_scan_wallet","args":{"address":"bc1qstyxdemqwaterfqwxyz2345678qpzry9x8gf2tvdw0s3j"},"response":{"result":{"content":[{"type":"text","text":"☠ STYX WATCH — BITCOIN · bc1qst…0s3j\nCurrent:   ≋≋≋≋≋≋≋≋  THE UNDERDOG (1,482 txs · underdog)\nReservoir: Great Marsh of Acheron — 314.25 BTC held\n\nRecent waters:\n━━━━━━━ MAIN STREAM ⇠ in  420 BTC · 2026-10-16 23:56 · aaaaaa…aaaa\n    ├── tributary 300 BTC from bc1qde…qqqq\n    └── tributary 120.05 BTC from 3DemoA…xxxx\n━━━━━━━ MAIN STREAM ⇢ out 155.51 BTC · 2026-10-16 20:03 · bbbbbb…bbbb\n    ├── tributary 80 BTC → bc1qde…qqqq\n    ├── tributary 45.5 BTC → 3DemoL…xxxx\n    └── tributary 30 BTC → bc1qde…qqqq\n━━━━ STREAM ⇠ in  12.75 BTC · 2026-10-16 14:13 · cccccc…cccc\n    └── tributary 12.8 BTC from 123WBU…J4KX\n── RIVULET ⇢ out 2.401 BTC · 2026-10-16 06:43 · dddddd…dddd\n    └── tributary 2.4 BTC → bc1qde…qqqq\n┈ TRICKLE ⇠ in  0.35 BTC · 2026-10-16 00:20 · eeeeee…eeee\n    └── tributary 0.36 BTC from 3DemoT…xxxx\n\nJudgement: TAINTED — 1 associate(s) flagged: 123WBU…J4KX (OFAC sanctioned)\nExplorer: https://mempool.space/address/bc1qstyxdemqwaterfqwxyz2345678qpzry9x8gf2tvdw0s3j"}],"structuredContent":{"chain":"bitcoin","address":"bc1qstyxdemqwaterfqwxyz2345678qpzry9x8gf2tvdw0s3j","label":null,"explorer":"https://mempool.space/address/bc1qstyxdemqwaterfqwxyz2345678qpzry9x8gf2tvdw0s3j","symbol":"BTC","health":{"txCount":1482,"exact":true,"status":"underdog","nickname":"The Underdog","flow":"≋≋≋≋≋≋≋≋"},"reservoir":{"balance":314.25,"form":"great lake","name":"Great Marsh of Acheron"},"flows":[{"txid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","time":"2026-10-16T23:56:40.000Z","direction":"in","amount":420,"tier":"main stream","splits":[{"address":"bc1qdemqferrysrcqqqqqqqqqqqqqqqqqqqqqqqqqq","amount":300},{"address":"3DemoAcheronSourcexxxxxxxxxxxx","amount":120.05}]},{"txid":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","time":"2026-10-16T20:03:20.000Z","direction":"out","amount":155.51,"tier":"main stream","splits":[{"address":"bc1qdemqmarshaqqqqqqqqqqqqqqqqqqqqqqqqqqq","amount":80},{"address":"3DemoLetheDestxxxxxxxxxxxxxxx","amount":45.5},{"address":"bc1qdemqreedsqqqqqqqqqqqqqqqqqqqqqqqqqqqq","amount":30}]},{"txid":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","time":"2026-10-16T14:13:20.000Z","direction":"in","amount":12.75,"tier":"stream","splits":[{"address":"123WBUDmSJv4GctdVEz6Qq6z8nXSKrJ4KX","amount":12.8}]},{"txid":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","time":"2026-10-16T06:43:20.000Z","direction":"out","amount":2.401,"tier":"rivulet","splits":[{"address":"bc1qdemqpondqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","amount":2.4}]},{"txid":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee","time":"2026-10-16T00:20:00.000Z","direction":"in","amount":0.35,"tier":"trickle","splits":[{"address":"3DemoTrickleSrcxxxxxxxxxxxxxx","amount":0.36}]}],"associations":[{"address":"123WBUDmSJv4GctdVEz6Qq6z8nXSKrJ4KX","label":null,"inflow":12.8,"outflow":0,"txs":1,"flags":["OFAC sanctioned"]},{"address":"bc1qdemqferrysrcqqqqqqqqqqqqqqqqqqqqqqqqqq","label":null,"inflow":300,"outflow":0,"txs":1,"flags":[]},{"address":"3DemoAcheronSourcexxxxxxxxxxxx","label":null,"inflow":120.05,"outflow":0,"txs":1,"flags":[]},{"address":"bc1qdemqmarshaqqqqqqqqqqqqqqqqqqqqqqqqqqq","label":null,"inflow":0,"outflow":80,"txs":1,"flags":[]},{"address":"3DemoLetheDestxxxxxxxxxxxxxxx","label":null,"inflow":0,"outflow":45.5,"txs":1,"flags":[]},{"address":"bc1qdemqreedsqqqqqqqqqqqqqqqqqqqqqqqqqqqq","label":null,"inflow":0,"outflow":30,"txs":1,"flags":[]},{"address":"bc1qdemqpondqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","label":null,"inflow":0,"outflow":2.4,"txs":1,"flags":[]},{"address":"3DemoTrickleSrcxxxxxxxxxxxxxx","label":null,"inflow":0.36,"outflow":0,"txs":1,"flags":[]}],"risk":{"verdict":"tainted","walletFlags":[],"taintedAssociates":1,"sources":["OFAC XBT"],"unavailable":[]},"notes":[],"checkedAt":"2026-10-17T19:31:38.257Z"},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"sol":{"tool":"styx_scan_wallet","args":{"address":"StyxDemoRiverWhaxe8888888888888888888888","chain":"solana"},"response":{"result":{"content":[{"type":"text","text":"☠ STYX WATCH — SOLANA · StyxDe…8888\nCurrent:   ≈≈≈≈≈≈  FERRYMAN'S CURRENT (640 txs · healthy)\nReservoir: Lake Avernus — 18,420 SOL held\n\nRecent waters:\n── RIVULET ⇠ in  4,200 SOL · 2026-10-17 01:20 · DemoSi…xxxx\n    └── tributary 4,200 SOL from DemoFe…aaaa\n── RIVULET ⇢ out 1,850 SOL · 2026-10-16 23:50 · DemoSi…xxxx\n    └── tributary 1,850 SOL → DemoMa…bbbb\n━━━━ STREAM ⇠ in  12,500 SOL · 2026-10-16 22:20 · DemoSi…xxxx\n    └── tributary 12,500 SOL from DemoDe…cccc\n┈ TRICKLE ⇢ out 640 SOL · 2026-10-16 20:50 · DemoSi…xxxx\n    └── tributary 640 SOL → DemoRe…dddd\n┈ TRICKLE ⇠ in  95 SOL · 2026-10-16 19:20 · DemoSi…xxxx\n    └── tributary 95 SOL from DemoTr…eeee\n── RIVULET ⇢ out 3,100 SOL · 2026-10-16 17:50 · DemoSi…xxxx\n    └── tributary 3,100 SOL → DemoBa…ffff\n── RIVULET ⇠ in  4,200 SOL · 2026-10-16 16:20 · DemoSi…xxxx\n    └── tributary 4,200 SOL from DemoFe…aaaa\n── RIVULET ⇢ out 1,850 SOL · 2026-10-16 14:50 · DemoSi…xxxx\n    └── tributary 1,850 SOL → DemoMa…bbbb\n\nJudgement: CLEAN — no sanctioned or blacklisted wallets among 6 associates (OFAC SOL, GoPlus).\nExplorer: https://solscan.io/account/StyxDemoRiverWhaxe8888888888888888888888"}],"structuredContent":{"chain":"solana","address":"StyxDemoRiverWhaxe8888888888888888888888","label":null,"explorer":"https://solscan.io/account/StyxDemoRiverWhaxe8888888888888888888888","symbol":"SOL","health":{"txCount":640,"exact":true,"status":"healthy","nickname":"Ferryman's Current","flow":"≈≈≈≈≈≈"},"reservoir":{"balance":18420,"form":"lake","name":"Lake Avernus"},"flows":[{"txid":"DemoSig0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-17T01:20:00.000Z","direction":"in","amount":4200,"tier":"rivulet","splits":[{"address":"DemoFerrySourceAaaaaaaaaaaaaaaaaaaaaaaaa","amount":4200}]},{"txid":"DemoSig1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T23:50:00.000Z","direction":"out","amount":1850,"tier":"rivulet","splits":[{"address":"DemoMarshDestBbbbbbbbbbbbbbbbbbbbbbbbbb","amount":1850}]},{"txid":"DemoSig2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T22:20:00.000Z","direction":"in","amount":12500,"tier":"stream","splits":[{"address":"DemoDeltaInflowCccccccccccccccccccccccc","amount":12500}]},{"txid":"DemoSig3xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T20:50:00.000Z","direction":"out","amount":640,"tier":"trickle","splits":[{"address":"DemoReedDestDdddddddddddddddddddddddddd","amount":640}]},{"txid":"DemoSig4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T19:20:00.000Z","direction":"in","amount":95,"tier":"trickle","splits":[{"address":"DemoTrickleSrcEeeeeeeeeeeeeeeeeeeeeeeee","amount":95}]},{"txid":"DemoSig5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T17:50:00.000Z","direction":"out","amount":3100,"tier":"rivulet","splits":[{"address":"DemoBankDestFfffffffffffffffffffffffffff","amount":3100}]},{"txid":"DemoSig6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T16:20:00.000Z","direction":"in","amount":4200,"tier":"rivulet","splits":[{"address":"DemoFerrySourceAaaaaaaaaaaaaaaaaaaaaaaaa","amount":4200}]},{"txid":"DemoSig7xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","time":"2026-10-16T14:50:00.000Z","direction":"out","amount":1850,"tier":"rivulet","splits":[{"address":"DemoMarshDestBbbbbbbbbbbbbbbbbbbbbbbbbb","amount":1850}]}],"associations":[{"address":"DemoDeltaInflowCccccccccccccccccccccccc","label":null,"inflow":12500,"outflow":0,"txs":1,"flags":[]},{"address":"DemoFerrySourceAaaaaaaaaaaaaaaaaaaaaaaaa","label":null,"inflow":8400,"outflow":0,"txs":2,"flags":[]},{"address":"DemoMarshDestBbbbbbbbbbbbbbbbbbbbbbbbbb","label":null,"inflow":0,"outflow":3700,"txs":2,"flags":[]},{"address":"DemoBankDestFfffffffffffffffffffffffffff","label":null,"inflow":0,"outflow":3100,"txs":1,"flags":[]},{"address":"DemoReedDestDdddddddddddddddddddddddddd","label":null,"inflow":0,"outflow":640,"txs":1,"flags":[]},{"address":"DemoTrickleSrcEeeeeeeeeeeeeeeeeeeeeeeee","label":null,"inflow":95,"outflow":0,"txs":1,"flags":[]}],"risk":{"verdict":"clean","walletFlags":[],"taintedAssociates":0,"sources":["OFAC SOL","GoPlus"],"unavailable":[]},"notes":[],"checkedAt":"2026-10-17T19:31:38.507Z"},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"near":{"tool":"styx_scan_wallet","args":{"address":"styx-demo.near"},"response":{"result":{"content":[{"type":"text","text":"☠ STYX WATCH — NEAR · styx-demo.near\nCurrent:   ·˙·˙·  SHADE'S TRICKLE (37 txs · poor)\nReservoir: Puddle of Lethe — 2,350 NEAR held\n\nRecent waters:\n┈ TRICKLE ⇠ in  1,200 NEAR · 2026-10-16 22:33 · DemoNearTx1\n    └── tributary 1,200 NEAR from demo-river.near\n┈ TRICKLE ⇢ out 340 NEAR · 2026-10-16 11:26 · DemoNearTx2\n    └── tributary 340 NEAR → demo-shop.near\n┈ TRICKLE ⇢ out 25 NEAR · 2026-10-15 21:33 · DemoNearTx3\n    └── tributary 25 NEAR → demo-dex.near\n\nJudgement: CLEAN — no sanctioned or blacklisted wallets among 3 associates (no public scam list covers NEAR yet).\nExplorer: https://nearblocks.io/address/styx-demo.near"}],"structuredContent":{"chain":"near","address":"styx-demo.near","label":null,"explorer":"https://nearblocks.io/address/styx-demo.near","symbol":"NEAR","health":{"txCount":37,"exact":true,"status":"poor","nickname":"Shade's Trickle","flow":"·˙·˙·"},"reservoir":{"balance":2350,"form":"puddle","name":"Puddle of Lethe"},"flows":[{"txid":"DemoNearTx1","time":"2026-10-16T22:33:20.000Z","direction":"in","amount":1200,"tier":"trickle","splits":[{"address":"demo-river.near","amount":1200}]},{"txid":"DemoNearTx2","time":"2026-10-16T11:26:40.000Z","direction":"out","amount":340,"tier":"trickle","splits":[{"address":"demo-shop.near","amount":340}]},{"txid":"DemoNearTx3","time":"2026-10-15T21:33:20.000Z","direction":"out","amount":25,"tier":"trickle","splits":[{"address":"demo-dex.near","amount":25}]}],"associations":[{"address":"demo-river.near","label":null,"inflow":1200,"outflow":0,"txs":1,"flags":[]},{"address":"demo-shop.near","label":null,"inflow":0,"outflow":340,"txs":1,"flags":[]},{"address":"demo-dex.near","label":null,"inflow":0,"outflow":25,"txs":1,"flags":[]}],"risk":{"verdict":"clean","walletFlags":[],"taintedAssociates":0,"sources":[],"unavailable":["No public scam list covers NEAR"]},"notes":[],"checkedAt":"2026-10-17T19:31:38.751Z"},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"bnb":{"tool":"styx_scan_wallet","args":{"address":"0xdead00000000000000000000000000000000beef"},"response":{"result":{"content":[{"type":"text","text":"☠ STYX WATCH — BNB · 0xdead…beef\nCurrent:   ·˙·˙·  SHADE'S TRICKLE (≥9 txs · poor)\nReservoir: Puddle of Lethe — 3.2 BNB held\n\nRecent waters: none visible from keyless sources\n\nJudgement: DAMNED — this wallet is flagged: ScamSniffer blacklist, GoPlus: phishing activities\nNote: BNB count is outgoing transactions only (account nonce); incoming transfers are not counted.\nNote: Per-address BNB history needs an Etherscan V2 key, so keyless mode shows balance, count and risk only.\nExplorer: https://bscscan.com/address/0xdead00000000000000000000000000000000beef"}],"structuredContent":{"chain":"bnb","address":"0xdead00000000000000000000000000000000beef","label":null,"explorer":"https://bscscan.com/address/0xdead00000000000000000000000000000000beef","symbol":"BNB","health":{"txCount":9,"exact":false,"status":"poor","nickname":"Shade's Trickle","flow":"·˙·˙·"},"reservoir":{"balance":3.2,"form":"puddle","name":"Puddle of Lethe"},"flows":[],"associations":[],"risk":{"verdict":"damned","walletFlags":["ScamSniffer blacklist","GoPlus: phishing activities"],"taintedAssociates":0,"sources":["OFAC ETH","OFAC USDT","OFAC BSC","ScamSniffer","GoPlus"],"unavailable":[]},"notes":["BNB count is outgoing transactions only (account nonce); incoming transfers are not counted.","Per-address BNB history needs an Etherscan V2 key, so keyless mode shows balance, count and risk only."],"checkedAt":"2026-10-17T19:31:38.994Z"},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"bad":{"tool":"styx_scan_wallet","args":{"address":"hello-ferryman!!"},"response":{"result":{"content":[{"type":"text","text":"Could not tell which network this address belongs to. Pass chain: bitcoin, solana, near or bnb."}],"isError":true,"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"currents":{"tool":"styx_currents","args":{"limit":8},"response":{"result":{"content":[{"type":"text","text":"☠ THE GREAT CURRENTS OF THE STYX\n━━━━━━━ BITCOIN 1,209.9 BTC bc1qde…qqqq ⇢ bc1qde…qqqq · 3 waterways\n━━━━━━━ BITCOIN 259.98 BTC 3DemoF…xxxx ⇢ bc1qde…qqqq\n━━━━━━━ BNB     14,500 BNB 0xdemo…0a01 ⇢ 0xdemo…0b02\n━━━━━━━ NEAR    1,250,000 NEAR demo-whale.near ⇢ demo-bridge.near\n━━━━ BITCOIN 64.2 BTC\n━━━━ BNB     2,200 BNB 0xdemo…0c03 ⇢ 0xdemo…0d04\n━━━━ NEAR    180,000 NEAR demo-fund.near ⇢ demo-pool.near\n━━━━ BITCOIN 17.99 BTC bc1qde…qqqq ⇢ 3DemoD…xxxx"}],"structuredContent":{"currents":[{"chain":"bitcoin","txid":"2222222222222222222222222222222222222222222222222222222222222222","time":"2026-10-17T01:20:00.000Z","amount":1209.9,"tier":"main stream","from":"bc1qdemqwhaleqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","to":"bc1qdemqtoaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","splits":3},{"chain":"bitcoin","txid":"3333333333333333333333333333333333333333333333333333333333333333","time":"2026-10-17T01:20:00.000Z","amount":259.98,"tier":"main stream","from":"3DemoFundxxxxxxxxxxxxxxxxxxxxx","to":"bc1qdemqcoldqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","splits":1},{"chain":"bnb","txid":"0xdemo1","time":"2026-10-17T01:20:00.000Z","amount":14500,"tier":"main stream","from":"0xdemo000000000000000000000000000000000a01","to":"0xdemo000000000000000000000000000000000b02","splits":1},{"chain":"near","txid":"DemoNearBig1","time":"2026-10-17T01:03:20.000Z","amount":1250000,"tier":"main stream","from":"demo-whale.near","to":"demo-bridge.near","splits":1},{"chain":"bitcoin","txid":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","time":null,"amount":64.2,"tier":"stream","from":null,"to":null,"splits":0},{"chain":"bnb","txid":"0xdemo2","time":"2026-10-17T01:20:00.000Z","amount":2200,"tier":"stream","from":"0xdemo000000000000000000000000000000000c03","to":"0xdemo000000000000000000000000000000000d04","splits":1},{"chain":"near","txid":"DemoNearMid2","time":"2026-10-17T00:46:40.000Z","amount":180000,"tier":"stream","from":"demo-fund.near","to":"demo-pool.near","splits":1},{"chain":"bitcoin","txid":"4444444444444444444444444444444444444444444444444444444444444444","time":"2026-10-17T01:20:00.000Z","amount":17.99,"tier":"stream","from":"bc1qdemqsmallqqqqqqqqqqqqqqqqqqqqqqqqqqqqq","to":"3DemoDestSmallxxxxxxxxxxxxxxx","splits":1}],"perChain":[{"chain":"bitcoin","sampled":6,"ok":true,"note":null},{"chain":"solana","sampled":0,"ok":true,"note":"Sampled from labelled exchange wallets"},{"chain":"near","sampled":3,"ok":true,"note":null},{"chain":"bnb","sampled":3,"ok":true,"note":null}],"checkedAt":"2026-10-17T19:31:39.474Z"},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"legend":{"tool":"styx_legend","args":{},"response":{"result":{"content":[{"type":"text","text":"☠ STYX LEGEND\n·                Lethe's Dry Bed — 0–0 txs (dry)\n·˙·˙·            Shade's Trickle — 1–99 txs (poor)\n≈≈≈≈≈≈           Ferryman's Current — 100–999 txs (healthy)\n≋≋≋≋≋≋≋≋         The Underdog — 1,000–9,999 txs (underdog)\n≋≋≋≋≋≋≋≋≋≋       Cerberus Torrent — 10,000–99,999 txs (overscaled)\n≋≋≋≋≋≋≋≋≋≋≋≋     Acheron Flood — 100,000–999,999 txs (overscaled)\n≋≋≋≋≋≋≋≋≋≋≋≋≋≋   Leviathan of Hades — 1,000,000+ txs (overscaled)\n\nbitcoin  rivulet ≥1 · stream ≥10 · main stream ≥100 BTC\nsolana   rivulet ≥1,000 · stream ≥10,000 · main stream ≥100,000 SOL\nnear     rivulet ≥10,000 · stream ≥100,000 · main stream ≥1,000,000 NEAR\nbnb      rivulet ≥100 · stream ≥1,000 · main stream ≥10,000 BNB\n\nDry riverbed: zero balance\nPuddle of Lethe: below rivulet threshold\nPond of Shades: rivulet to stream threshold\nLake Avernus: stream to main-stream threshold\nGreat Marsh of Acheron: main stream up to 10×\nAbyss of Tartarus: over 10× main-stream threshold"}],"structuredContent":{"healthTiers":[{"minTx":0,"maxTx":0,"status":"dry","nickname":"Lethe's Dry Bed","flow":"·"},{"minTx":1,"maxTx":99,"status":"poor","nickname":"Shade's Trickle","flow":"·˙·˙·"},{"minTx":100,"maxTx":999,"status":"healthy","nickname":"Ferryman's Current","flow":"≈≈≈≈≈≈"},{"minTx":1000,"maxTx":9999,"status":"underdog","nickname":"The Underdog","flow":"≋≋≋≋≋≋≋≋"},{"minTx":10000,"maxTx":99999,"status":"overscaled","nickname":"Cerberus Torrent","flow":"≋≋≋≋≋≋≋≋≋≋"},{"minTx":100000,"maxTx":999999,"status":"overscaled","nickname":"Acheron Flood","flow":"≋≋≋≋≋≋≋≋≋≋≋≋"},{"minTx":1000000,"maxTx":null,"status":"overscaled","nickname":"Leviathan of Hades","flow":"≋≋≋≋≋≋≋≋≋≋≋≋≋≋"}],"flowThresholds":[{"chain":"bitcoin","symbol":"BTC","rivulet":1,"stream":10,"mainStream":100},{"chain":"solana","symbol":"SOL","rivulet":1000,"stream":10000,"mainStream":100000},{"chain":"near","symbol":"NEAR","rivulet":10000,"stream":100000,"mainStream":1000000},{"chain":"bnb","symbol":"BNB","rivulet":100,"stream":1000,"mainStream":10000}],"waterBodies":[{"form":"dry bed","name":"Dry riverbed","rule":"zero balance"},{"form":"puddle","name":"Puddle of Lethe","rule":"below rivulet threshold"},{"form":"pond","name":"Pond of Shades","rule":"rivulet to stream threshold"},{"form":"lake","name":"Lake Avernus","rule":"stream to main-stream threshold"},{"form":"great lake","name":"Great Marsh of Acheron","rule":"main stream up to 10×"},{"form":"abyss","name":"Abyss of Tartarus","rule":"over 10× main-stream threshold"}],"knownWallets":[{"chain":"bitcoin","address":"34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo","label":"Binance cold wallet","source":"bitinfocharts.com rich list"},{"chain":"bitcoin","address":"3M219KR5vEneNb47ewrPfWyb5jQ2DjxRP6","label":"Binance cold wallet","source":"bitinfocharts.com rich list"},{"chain":"bitcoin","address":"bc1ql49ydapnjafl5t2cp9zqpjwe6pdgmxy98859v2","label":"Robinhood cold wallet","source":"bitinfocharts.com rich list"},{"chain":"solana","address":"9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM","label":"Binance 3","source":"Solscan label"},{"chain":"solana","address":"5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9","label":"Binance 2","source":"Solscan label"},{"chain":"solana","address":"H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS","label":"Coinbase 1","source":"Solscan label"},{"chain":"bnb","address":"0xF977814e90dA44bFA03b6295A0616a897441aceC","label":"Binance hot wallet 20","source":"Etherscan name tag"},{"chain":"bnb","address":"0x631Fc1EA2270e98fbD9D92658eCe0F5a269Aa161","label":"Binance hot wallet","source":"BscScan label"},{"chain":"bnb","address":"0x8894E0a0c962CB723c1976a4421c95949bE2D4E3","label":"Binance 51","source":"Etherscan name tag"}],"networkHosts":["mempool.space","api.mainnet-beta.solana.com","free.rpc.fastnear.com","rpc.mainnet.near.org","api.nearblocks.io","bsc-dataseed.bnbchain.org","api.gopluslabs.io","raw.githubusercontent.com"]},"resultType":"complete","_meta":{"io.modelcontextprotocol/serverInfo":{"name":"styx-watch","version":"0.1.0"}}},"jsonrpc":"2.0","id":1}},"tools":[{"name":"styx_scan_wallet","title":"Scan a wallet on the River Styx","description":"Scans a Bitcoin, Solana, NEAR or BNB Chain wallet: balance as a lake or pond, recent fund movements as streams and tributaries, activity health by transaction count, and every counterparty screened against OFAC sanctions, the ScamSniffer blacklist and GoPlus risk flags. Read-only; never needs a private key. Chain is detected from the address if omitted.","inputSchema":{"type":"object","$schema":"https://json-schema.org/draft/2020-12/schema","properties":{"address":{"type":"string","minLength":2,"maxLength":100,"description":"Wallet address or NEAR account ID"},"chain":{"description":"bitcoin, solana, near or bnb; detected from the address when omitted","type":"string","enum":["bitcoin","solana","near","bnb"]}},"required":["address"],"additionalProperties":false}},{"name":"styx_currents","title":"Watch the great currents","description":"Returns the largest recent fund movements across Bitcoin, Solana, NEAR and BNB Chain, ranked as main streams, streams and rivulets. Call it repeatedly (for example every minute) to keep a live feed of whale and market-maker movement.","inputSchema":{"type":"object","$schema":"https://json-schema.org/draft/2020-12/schema","properties":{"chains":{"description":"Networks to sample; all four when omitted","minItems":1,"maxItems":4,"type":"array","items":{"type":"string","enum":["bitcoin","solana","near","bnb"]}},"limit":{"description":"Movements to return, largest first (default 12)","type":"integer","minimum":1,"maximum":30}},"additionalProperties":false}},{"name":"styx_legend","title":"Styx map legend","description":"Explains the Styx map: health nicknames by transaction count, stream thresholds per network, lakes and ponds, and labelled market-maker wallets.","inputSchema":{"type":"object","$schema":"https://json-schema.org/draft/2020-12/schema","properties":{},"additionalProperties":false}}]};
+const $ = (id) => document.getElementById(id);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
+const fmt = (n) => nf.format(n);
+const short = (a) => (a && a.length > 14 ? a.slice(0, 6) + "…" + a.slice(-4) : a || "?");
+
+// ---------- Hero river ----------
+(function hero() {
+  const cv = $("heroRiver"), cx = cv.getContext("2d");
+  const streams = [
+    { y: .18, w: 9, c: "--water" }, { y: .34, w: 4, c: "--water" }, { y: .52, w: 13, c: "--water" },
+    { y: .68, w: 3, c: "--blood" }, { y: .84, w: 6, c: "--water" }, { y: .45, w: 2, c: "--water" },
+  ];
+  function size() { const d = devicePixelRatio || 1; cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; cx.setTransform(d, 0, 0, d, 0, 0); }
+  function frame(now) {
+    const W = cv.clientWidth, H = cv.clientHeight, T = now / 1000;
+    cx.clearRect(0, 0, W, H);
+    const lx = W * (W > 900 ? .62 : .78), ly = H * .5;
+    for (const s of streams) {
+      const p = [-20, s.y * H, W * .2, s.y * H, W * .38, ly + (s.y - .5) * H * .25, lx - 30, ly];
+      cx.strokeStyle = css(s.c); cx.globalAlpha = .16; cx.lineWidth = s.w; cx.lineCap = "round";
+      cx.beginPath(); cx.moveTo(p[0], p[1]); cx.bezierCurveTo(p[2], p[3], p[4], p[5], p[6], p[7]); cx.stroke();
+      cx.globalAlpha = .55; cx.fillStyle = s.c === "--blood" ? css("--blood") : css("--bone");
+      const n = 3 + Math.round(s.w / 3);
+      for (let k = 0; k < n; k++) {
+        const t = ((T * .06 * (1 + s.w / 14)) + k / n) % 1, u = 1 - t;
+        const x = u*u*u*p[0] + 3*u*u*t*p[2] + 3*u*t*t*p[4] + t*t*t*p[6], y = u*u*u*p[1] + 3*u*u*t*p[3] + 3*u*t*t*p[5] + t*t*t*p[7];
+        cx.beginPath(); cx.arc(x, y, Math.max(1, s.w / 5), 0, 7); cx.fill();
+      }
+    }
+    for (let k = 0; k < 3; k++) {
+      const q = [[lx + 20, ly], [W * .86, ly - H * .22], [W * .92, ly + H * .26]][k];
+      cx.globalAlpha = .12; cx.strokeStyle = css("--water"); cx.lineWidth = 4 - k;
+      cx.beginPath(); cx.moveTo(lx + 20, ly); cx.quadraticCurveTo(W * .78, q[1], W + 20, q[1]); cx.stroke();
+    }
+    cx.globalAlpha = 1;
+    const R = Math.min(110, H * .22), g = cx.createRadialGradient(lx, ly, 2, lx, ly, R);
+    g.addColorStop(0, "rgba(224,168,82,.55)"); g.addColorStop(.3, "rgba(98,172,163,.28)"); g.addColorStop(1, "rgba(10,14,18,0)");
+    cx.fillStyle = g; cx.beginPath(); cx.ellipse(lx, ly, R + Math.sin(T) * 2, R * .6, 0, 0, 7); cx.fill();
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  addEventListener("resize", () => { size(); if (reduce) frame(0); });
+  size(); requestAnimationFrame(frame);
+})();
+
+// ---------- Depth gauge ----------
+(function gauge() {
+  const legend = RUNS.legend.response.result.structuredContent;
+  $("gauge").innerHTML = "";
+  legend.healthTiers.forEach((t, i) => {
+    const d = document.createElement("div"); if (t.nickname === "The Underdog") d.className = "hl";
+    const range = t.maxTx === null ? `${fmt(t.minTx)}+` : t.minTx === t.maxTx ? fmt(t.minTx) : `${fmt(t.minTx)}–${fmt(t.maxTx)}`;
+    d.innerHTML = `<div class="flow" style="width:${8 + i * 15}%;opacity:${.25 + i * .12}"></div><span class="n"></span><span class="nk"></span><span class="st"></span>`;
+    d.querySelector(".n").textContent = range + " txs"; d.querySelector(".nk").textContent = t.nickname; d.querySelector(".st").textContent = t.status;
+    $("gauge").append(d);
+  });
+  const sizes = [4, 8, 13, 19, 26, 34];
+  legend.waterBodies.forEach((w, i) => { const s = document.createElement("span"); const dot = document.createElement("i"); dot.style.width = dot.style.height = sizes[i] + "px"; s.append(dot, `${w.name}: ${w.rule}`); $("lakes").append(s); });
+})();
+
+// ---------- Console ----------
+const TOOLS = RUNS.tools;
+const PRESETS = {
+  styx_scan_wallet: [["btc", "Tainted · Bitcoin", "--lantern"], ["sol", "Clean · Solana", "--water"], ["near", "Trickle · NEAR", "--ash"], ["bnb", "Damned · BNB", "--blood"], ["bad", "Bad address", "--ash"]],
+  styx_currents: [["currents", "All four networks", "--water"]],
+  styx_legend: [["legend", "Full legend", "--water"]],
+};
+let tool = "styx_scan_wallet";
+function detect(a) {
+  a = a.trim();
+  if (/^0x[0-9a-fA-F]{40}$/.test(a)) return "bnb";
+  if (/^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/.test(a)) return "bitcoin";
+  const p = "(?:[a-z0-9]+[-_])*[a-z0-9]+";
+  if (new RegExp(`^(?=.{2,64}$)${p}(?:\\.${p})+$`).test(a) || /^[0-9a-f]{64}$/.test(a)) return "near";
+  if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a)) return "solana";
+  return null;
+}
+function renderTools() {
+  $("tools").replaceChildren(...TOOLS.map((t) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "tool"; b.setAttribute("aria-pressed", String(t.name === tool));
+    const n = document.createElement("b"); n.textContent = t.name; const d = document.createElement("span"); d.textContent = t.title;
+    b.append(n, d); b.addEventListener("click", () => { tool = t.name; renderTools(); loadPreset(PRESETS[tool][0][0]); }); return b;
+  }));
+  $("presets").replaceChildren(...PRESETS[tool].map(([k, l, c]) => {
+    const b = document.createElement("button"); b.type = "button"; const i = document.createElement("i"); i.style.background = css(c);
+    b.append(i, l); b.addEventListener("click", () => { loadPreset(k); run(); }); return b;
+  }));
+}
+function loadPreset(k) { $("args").value = JSON.stringify(RUNS[k].args, null, 2); $("inputErr").textContent = ""; }
+
+function showTab(which) {
+  for (const [t, p] of [["tabMap", "paneMap"], ["tabJson", "paneJson"], ["tabReq", "paneReq"]]) { const on = t === which; $(t).setAttribute("aria-selected", String(on)); $(p).hidden = !on; }
+}
+["tabMap", "tabJson", "tabReq"].forEach((t) => $(t).addEventListener("click", () => showTab(t)));
+
+let typing = 0;
+function typeOut(text) {
+  const id = ++typing, lines = text.split("\n"), el = $("textOut");
+  if (reduce) { el.textContent = text; return; }
+  el.textContent = ""; let i = 0;
+  (function step() { if (id !== typing) return; el.textContent += (i ? "\n" : "") + lines[i++]; if (i < lines.length) setTimeout(step, 38); })();
+}
+
+function setStatus(kind, label) { $("status").className = "pill " + kind; $("status").textContent = label; }
+
+function show(run, args, note) {
+  const res = run.response.result, s = res.structuredContent;
+  $("reqOut").textContent = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: run.tool, arguments: args, _meta: { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} } } }, null, 2);
+  $("jsonOut").textContent = JSON.stringify(res.isError ? res : s, null, 2);
+  const v = s && s.risk ? s.risk.verdict : "";
+  $("verdict").className = "verdict " + v; $("verdict").textContent = v ? v[0].toUpperCase() + v.slice(1) : "";
+  setStatus(res.isError ? "bad" : "ok", res.isError ? "Tool error" : "Completed");
+  typeOut(res.content[0].text + (note ? "\n\n" + note : ""));
+  drawMini(run.tool === "styx_scan_wallet" && !res.isError ? s : run.tool === "styx_currents" ? s : null, run.tool);
+}
+
+function run() {
+  $("inputErr").textContent = ""; $("callName").textContent = tool;
+  let args;
+  try { args = JSON.parse($("args").value || "{}"); } catch { $("inputErr").textContent = "That input isn't valid JSON. Check for a missing quote or comma."; return; }
+  if (typeof args !== "object" || args === null || Array.isArray(args)) { $("inputErr").textContent = "The input must be a JSON object, like {\"address\": \"…\"}."; return; }
+  setStatus("run", "Running"); $("verdict").textContent = "";
+  const go = () => {
+    if (tool === "styx_legend") return show(RUNS.legend, args);
+    if (tool === "styx_currents") {
+      const same = JSON.stringify(args) === JSON.stringify(RUNS.currents.args);
+      return show(RUNS.currents, args, same ? "" : "Replaying the recorded run (all four networks, limit 8). Solana currents come from labelled exchange wallets, so they are left out of example data.");
+    }
+    const addr = typeof args.address === "string" ? args.address.trim() : "";
+    const extra = Object.keys(args).filter((k) => k !== "address" && k !== "chain");
+    if (!addr || addr.length < 2 || addr.length > 100 || extra.length || (args.chain && !["bitcoin", "solana", "near", "bnb"].includes(args.chain))) {
+      setStatus("bad", "Invalid input");
+      $("inputErr").textContent = "styx_scan_wallet takes \"address\" (2–100 characters) and an optional \"chain\": bitcoin, solana, near or bnb.";
+      return;
+    }
+    const hit = ["btc", "sol", "near", "bnb", "bad"].find((k) => RUNS[k].args.address === addr);
+    if (hit) return show(RUNS[hit], args);
+    const c = args.chain || detect(addr);
+    if (!c) return show(RUNS.bad, args);
+    setStatus("idle", "Not recorded"); $("verdict").textContent = "";
+    $("jsonOut").textContent = JSON.stringify({ detectedChain: c, address: addr }, null, 2);
+    $("reqOut").textContent = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: tool, arguments: args } }, null, 2);
+    typeOut(`Address recognised as ${c === "bnb" ? "BNB Chain" : c[0].toUpperCase() + c.slice(1)}.\n\nThis console only replays recorded example runs, so it can't look up a real wallet.\nTo scan ${short(addr)} for real, run Styx Watch inside PayBox,\nor open the river map in your own browser.`);
+    drawMini(null);
+  };
+  reduce ? go() : setTimeout(go, 420);
+}
+$("runBtn").addEventListener("click", run);
+$("args").addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(); });
+
+// ---------- Mini river map in the console ----------
+const mm = $("miniMap"), mx = mm.getContext("2d"); let mini = null;
+const W8 = { "main stream": 10, stream: 6, rivulet: 3, trickle: 1.5 };
+function drawMini(s, kind) { mini = s ? { s, kind, t0: performance.now() } : null; mm.hidden = !s; if (s) sizeMini(); }
+function sizeMini() { const d = devicePixelRatio || 1; mm.width = mm.clientWidth * d; mm.height = mm.clientHeight * d; mx.setTransform(d, 0, 0, d, 0, 0); }
+function bez(p, t) { const u = 1 - t; return [u*u*u*p[0]+3*u*u*t*p[2]+3*u*t*t*p[4]+t*t*t*p[6], u*u*u*p[1]+3*u*u*t*p[3]+3*u*t*t*p[5]+t*t*t*p[7]]; }
+function miniFrame(now) {
+  if (mini && !mm.hidden) {
+    const W = mm.clientWidth, H = mm.clientHeight, T = (now - mini.t0) / 1000, s = mini.s;
+    mx.clearRect(0, 0, W, H);
+    const paths = [];
+    if (mini.kind === "styx_currents") {
+      s.currents.forEach((c, i) => { const y = H * (.1 + .8 * (i + .5) / s.currents.length); paths.push({ w: W8[c.tier] || 2, p: [8, y, W * .35, y, W * .65, y + Math.sin(i) * 12, W - 8, y], tag: `${c.chain.toUpperCase()} ${fmt(c.amount)}`, bad: false }); });
+    } else {
+      const bad = new Set(s.associations.filter((a) => a.flags.length).map((a) => a.address));
+      const forms = ["dry bed", "puddle", "pond", "lake", "great lake", "abyss"], R = [5, 11, 18, 26, 34, 44][forms.indexOf(s.reservoir.form)];
+      const L = [W * .5, H * .5], ins = s.flows.filter((f) => f.direction === "in").slice(0, 6), outs = s.flows.filter((f) => f.direction !== "in").slice(0, 5);
+      ins.forEach((f, i) => { const y = H * (.12 + .76 * (i + .5) / ins.length); paths.push({ w: W8[f.tier], bad: f.splits.some((x) => bad.has(x.address)), p: [8, y, W * .22, y, W * .32, L[1], L[0] - R, L[1]] }); });
+      outs.forEach((f, i) => { const y = H * (.12 + .76 * (i + .5) / outs.length), e = W * .76;
+        paths.push({ w: W8[f.tier], p: [L[0] + R, L[1], W * .62, L[1], W * .64, y, e, y] });
+        f.splits.slice(0, 4).forEach((x, j, a) => { const yy = y + (j - (a.length - 1) / 2) * 12; paths.push({ w: 1.6, bad: bad.has(x.address), p: [e, y, e + W * .05, y, e + W * .07, yy, W - 8, yy] }); }); });
+      mini.lake = { L, R, name: s.reservoir.name };
+    }
+    const speed = s.health ? { dry: .02, poor: .06, healthy: .14, underdog: .22, overscaled: .3 }[s.health.status] : .18;
+    for (const q of paths) {
+      mx.strokeStyle = q.bad ? css("--blood") : css("--water"); mx.globalAlpha = .3; mx.lineWidth = q.w; mx.lineCap = "round";
+      mx.beginPath(); mx.moveTo(q.p[0], q.p[1]); mx.bezierCurveTo(q.p[2], q.p[3], q.p[4], q.p[5], q.p[6], q.p[7]); mx.stroke();
+      mx.globalAlpha = .9; mx.fillStyle = q.bad ? css("--blood") : css("--bone");
+      const n = Math.max(1, Math.round(q.w / 2.5 + 2));
+      for (let k = 0; k < n; k++) { const [x, y] = bez(q.p, ((reduce ? 0 : T * speed) + k / n) % 1); mx.beginPath(); mx.arc(x, y, Math.max(1, q.w / 4), 0, 7); mx.fill(); }
+      if (q.tag) { mx.globalAlpha = 1; mx.fillStyle = css("--ash"); mx.font = "10px 'IBM Plex Mono', monospace"; mx.textAlign = "right"; mx.fillText(q.tag, W - 10, q.p[7] - q.w / 2 - 4); }
+    }
+    mx.globalAlpha = 1;
+    if (mini.kind !== "styx_currents" && mini.lake) {
+      const { L, R, name } = mini.lake, g = mx.createRadialGradient(L[0], L[1], 1, L[0], L[1], R + 5);
+      g.addColorStop(0, css("--lantern")); g.addColorStop(.3, css("--water")); g.addColorStop(1, "rgba(12,21,23,0)");
+      mx.fillStyle = g; mx.beginPath(); mx.ellipse(L[0], L[1], R + 5, (R + 5) * .7, 0, 0, 7); mx.fill();
+      mx.fillStyle = css("--bone"); mx.font = "12px 'Marcellus SC', Georgia, serif"; mx.textAlign = "center"; mx.fillText(name, L[0], L[1] + (R + 5) * .7 + 15);
+    }
+  }
+  requestAnimationFrame(miniFrame);
+}
+addEventListener("resize", () => mini && sizeMini());
+requestAnimationFrame(miniFrame);
+
+renderTools(); loadPreset("btc");
+show(RUNS.btc, RUNS.btc.args);
+</script>

@@ -1,0 +1,403 @@
+<title>Styx Watch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a river map is the hero; input above it, judgement and associates beside it, the great-currents feed flows behind everything. */
+:root {
+  color-scheme: dark;
+  --abyss: #0a0e12;       /* page ground: underworld water at night */
+  --murk: #12201f;        /* raised surfaces: Styx water */
+  --reed: #2c4441;        /* borders, grid, quiet strokes */
+  --bone: #d8d1c2;        /* text */
+  --ash: #8e978f;         /* secondary text */
+  --lantern: #d9a24e;     /* Charon's lantern: the one accent */
+  --water: #5fa8a0;       /* healthy flow */
+  --blood: #c0493f;       /* scam-linked: the damned */
+  --display: "Marcellus SC", "Trajan Pro", Georgia, serif;
+  --body: "Spectral", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--abyss); color: var(--bone); font: 16px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px; position: relative; overflow-x: hidden;
+}
+#currentsBg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .55; }
+.wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; display: grid; gap: 22px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 { font: 400 clamp(2rem, 5vw, 3.2rem)/1 var(--display); letter-spacing: .06em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--lantern); }
+.tag { color: var(--ash); font-style: italic; margin: 6px 0 0; max-width: 60ch; }
+.mode { font: 500 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 7px 10px; border: 1px solid var(--reed); border-radius: 2px; color: var(--ash); }
+.mode.live { color: var(--water); border-color: var(--water); }
+.mode.demo { color: var(--lantern); border-color: var(--lantern); }
+
+form { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; }
+label.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+input, select, button { font: 15px var(--mono); color: var(--bone); background: var(--murk); border: 1px solid var(--reed); border-radius: 2px; padding: 12px 14px; min-width: 0; }
+input::placeholder { color: var(--ash); }
+button { background: var(--lantern); color: var(--abyss); border-color: var(--lantern); font-weight: 500; cursor: pointer; letter-spacing: .04em; }
+button:hover { filter: brightness(1.1); }
+:focus-visible { outline: 2px solid var(--lantern); outline-offset: 2px; }
+.samples { display: flex; flex-wrap: wrap; gap: 8px; font: .78rem var(--mono); color: var(--ash); }
+.samples button { background: transparent; color: var(--ash); border: 1px dashed var(--reed); padding: 5px 9px; font-size: .78rem; }
+.samples button:hover { color: var(--bone); border-color: var(--ash); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; align-items: start; }
+.map { background: color-mix(in srgb, var(--murk) 82%, transparent); border: 1px solid var(--reed); border-radius: 2px; min-width: 0; }
+.map-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 14px 16px 0; font: .8rem var(--mono); color: var(--ash); }
+.map-head b { color: var(--bone); font-weight: 500; }
+#river { display: block; width: 100%; height: 440px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 0 16px 14px; font: .72rem var(--mono); color: var(--ash); }
+.legend i { display: inline-block; width: 22px; vertical-align: middle; margin-right: 6px; border-top: 2px solid var(--water); }
+.legend i.main { border-top-width: 7px; } .legend i.stream { border-top-width: 4px; }
+.legend i.damned { border-color: var(--blood); }
+
+aside { display: grid; gap: 16px; min-width: 0; }
+.panel { border-top: 1px solid var(--reed); padding-top: 12px; display: grid; gap: 8px; }
+.eyebrow { font: 500 .7rem/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ash); }
+.verdict { font: 400 1.9rem/1 var(--display); letter-spacing: .05em; }
+.verdict.clean { color: var(--water); } .verdict.tainted { color: var(--lantern); } .verdict.damned { color: var(--blood); }
+.stat { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .95rem; }
+.stat dt { color: var(--ash); } .stat dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.nick { font: 400 1.25rem/1.2 var(--display); color: var(--lantern); letter-spacing: .04em; }
+.note { font-size: .85rem; color: var(--ash); font-style: italic; }
+ul.assoc, ul.feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font: .78rem/1.4 var(--mono); max-height: 300px; overflow-y: auto; }
+ul.assoc li, ul.feed li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--reed) 55%, transparent); }
+ul.assoc li.bad { color: var(--blood); }
+.amt { font-variant-numeric: tabular-nums; color: var(--ash); }
+ul.feed li .ch { color: var(--lantern); }
+ul.feed li.main .amt { color: var(--bone); }
+footer { font-size: .8rem; color: var(--ash); max-width: 75ch; }
+footer a { color: var(--ash); }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } #river { height: 360px; } }
+@media (max-width: 520px) { form { grid-template-columns: 1fr 1fr; } form input { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { #currentsBg { display: none; } }
+</style>
+
+<canvas id="currentsBg" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Styx <span>Watch</span></h1>
+      <p class="tag">Every coin crosses the river. Trace where a wallet's money flows, how full its lake is, and which damned souls it has touched.</p>
+    </div>
+    <div id="mode" class="mode">Checking sources…</div>
+  </header>
+
+  <div style="display:grid;gap:10px">
+    <form id="scanForm">
+      <label class="sr" for="addr">Wallet address</label>
+      <input id="addr" autocomplete="off" spellcheck="false" placeholder="Paste a Bitcoin, Solana, NEAR or BNB wallet">
+      <label class="sr" for="chain">Network</label>
+      <select id="chain">
+        <option value="">Auto-detect</option><option value="bitcoin">Bitcoin</option><option value="solana">Solana</option><option value="near">NEAR</option><option value="bnb">BNB Chain</option>
+      </select>
+      <button id="go" type="submit">Cross the river</button>
+    </form>
+    <div class="samples" id="samples"><span>Try a market maker:</span></div>
+  </div>
+
+  <section class="main">
+    <div class="map">
+      <div class="map-head"><span id="who">No wallet scanned yet</span><span id="when"></span></div>
+      <canvas id="river" role="img" aria-label="River map of the wallet's fund flows"></canvas>
+      <div class="legend">
+        <span><i class="main"></i>Main stream</span><span><i class="stream"></i>Stream</span><span><i></i>Rivulet</span>
+        <span><i class="damned"></i>Scam-linked</span><span>Lake size = balance held</span>
+      </div>
+    </div>
+    <aside>
+      <div class="panel">
+        <span class="eyebrow">Judgement</span>
+        <div id="verdict" class="verdict">—</div>
+        <div id="verdictNote" class="note">Scan a wallet to see whether it has touched sanctioned or blacklisted addresses.</div>
+      </div>
+      <div class="panel">
+        <span class="eyebrow">Current strength</span>
+        <div id="nick" class="nick">—</div>
+        <dl class="stat">
+          <dt>Transactions</dt><dd id="txc">—</dd>
+          <dt>Held in the lake</dt><dd id="bal">—</dd>
+          <dt>Water body</dt><dd id="lake">—</dd>
+        </dl>
+      </div>
+      <div class="panel">
+        <span class="eyebrow">Associated wallets</span>
+        <ul class="assoc" id="assoc"><li><span class="note">Counterparties appear here.</span><span></span></li></ul>
+      </div>
+    </aside>
+  </section>
+
+  <section class="panel">
+    <span class="eyebrow">The great currents · refreshed every 60 seconds</span>
+    <ul class="feed" id="feed"><li><span class="note">Listening to the river…</span><span></span></li></ul>
+  </section>
+
+  <footer>
+    Sources: mempool.space (open-source Bitcoin explorer), Solana public RPC, FastNEAR and NearBlocks, BNB Chain public RPC, OFAC sanctioned-address lists mirrored by 0xB10C, the ScamSniffer blacklist and GoPlus address flags. Exchange labels come from public explorer name tags and are not proof of ownership. A clean judgement only means no listed source flags these wallets.
+  </footer>
+</div>
+
+<script>
+const CHAINS = {
+  bitcoin: { sym: "BTC", flow: [1, 10, 100] },
+  solana:  { sym: "SOL", flow: [1000, 10000, 100000] },
+  near:    { sym: "NEAR", flow: [10000, 100000, 1000000] },
+  bnb:     { sym: "BNB", flow: [100, 1000, 10000] },
+};
+const KNOWN = [
+  ["bitcoin", "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", "Binance cold wallet"],
+  ["bitcoin", "bc1ql49ydapnjafl5t2cp9zqpjwe6pdgmxy98859v2", "Robinhood cold wallet"],
+  ["solana", "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", "Binance 3"],
+  ["solana", "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9", "Binance 2"],
+  ["solana", "H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS", "Coinbase 1"],
+  ["near", "relay.aurora", "Aurora relayer"],
+  ["bnb", "0xF977814e90dA44bFA03b6295A0616a897441aceC", "Binance hot wallet 20"],
+  ["bnb", "0x631Fc1EA2270e98fbD9D92658eCe0F5a269Aa161", "Binance hot wallet"],
+];
+const norm = (c, a) => (c === "bnb" || c === "near" ? a.toLowerCase() : a);
+const label = (c, a) => (KNOWN.find(([k, x]) => k === c && norm(c, x) === norm(c, a)) || [])[2] || null;
+const HEALTH = [
+  [0, 0, "Lethe's Dry Bed", "dry", 0.05], [1, 99, "Shade's Trickle", "poor", 0.25], [100, 999, "Ferryman's Current", "healthy", 0.6],
+  [1000, 9999, "The Underdog", "underdog", 0.85], [10000, 99999, "Cerberus Torrent", "overscaled", 1],
+  [100000, 999999, "Acheron Flood", "overscaled", 1.15], [1000000, Infinity, "Leviathan of Hades", "overscaled", 1.3],
+];
+const health = (n) => HEALTH.find(([a, b]) => n >= a && n <= b);
+const tier = (c, x) => { const [r, s, m] = CHAINS[c].flow; x = Math.abs(x); return x >= m ? "main stream" : x >= s ? "stream" : x >= r ? "rivulet" : "trickle"; };
+const lakeOf = (c, b) => { const [r, s, m] = CHAINS[c].flow;
+  return b <= 0 ? ["Dry riverbed", 0] : b < r ? ["Puddle of Lethe", 1] : b < s ? ["Pond of Shades", 2] : b < m ? ["Lake Avernus", 3] : b < m * 10 ? ["Great Marsh of Acheron", 4] : ["Abyss of Tartarus", 5]; };
+const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
+const fmt = (n) => nf.format(n);
+const short = (a) => (a && a.length > 14 ? a.slice(0, 6) + "…" + a.slice(-4) : a || "?");
+function detect(a) {
+  a = a.trim();
+  if (/^0x[0-9a-fA-F]{40}$/.test(a)) return "bnb";
+  if (/^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/.test(a)) return "bitcoin";
+  const p = "(?:[a-z0-9]+[-_])*[a-z0-9]+";
+  if (new RegExp(`^(?=.{2,64}$)${p}(?:\\.${p})+$`).test(a) || /^[0-9a-f]{64}$/.test(a)) return "near";
+  if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a)) return "solana";
+  return null;
+}
+
+// ---------- network ----------
+async function getJson(url, init) {
+  const r = await fetch(url, { ...init, headers: init && init.body ? { "content-type": "application/json" } : {}, signal: AbortSignal.timeout(6000) });
+  if (!r.ok) throw new Error(new URL(url).host + " HTTP " + r.status);
+  return r.json();
+}
+async function rpc(url, method, params) {
+  const b = await getJson(url, { method: "POST", body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  if (b.error || b.result === undefined) throw new Error(method + " failed");
+  return b.result;
+}
+const units = (raw, d) => { try { let v = BigInt(raw || 0); const neg = v < 0n; if (neg) v = -v; const s = 10n ** BigInt(d); return (neg ? -1 : 1) * (Number(v / s) + Number(v % s) / Number(s)); } catch { return 0; } };
+const iso = (s) => (s ? new Date(s * 1000).toISOString() : null);
+const mk = (c, txid, time, net, splits) => ({ txid, time, dir: net > 0 ? "in" : net < 0 ? "out" : "self", amount: Math.abs(net), tier: tier(c, net), splits: splits.sort((a, b) => b.amount - a.amount) });
+
+const SOL = "https://api.mainnet-beta.solana.com", BSC = "https://bsc-dataseed.bnbchain.org", MP = "https://mempool.space/api", NB = "https://api.nearblocks.io/v1";
+function solFlow(tx, addr, sig) {
+  if (!tx || !tx.meta) return null;
+  const keys = tx.transaction.message.accountKeys.map((k) => (typeof k === "string" ? k : k.pubkey));
+  const i = keys.indexOf(addr); if (i < 0) return null;
+  const pre = tx.meta.preBalances, post = tx.meta.postBalances, net = (post[i] - pre[i]) / 1e9, sp = new Map();
+  const ins = [...tx.transaction.message.instructions, ...(tx.meta.innerInstructions || []).flatMap((x) => x.instructions)];
+  for (const ix of ins) { const p = ix.parsed; if (ix.program !== "system" || !p || p.type !== "transfer") continue;
+    const { source, destination, lamports } = p.info; const a = lamports / 1e9;
+    if (source === addr) sp.set(destination, (sp.get(destination) || 0) + a); if (destination === addr) sp.set(source, (sp.get(source) || 0) + a); }
+  return mk("solana", sig, iso(tx.blockTime), net, [...sp].map(([address, amount]) => ({ address, amount })));
+}
+const solTx = (s) => rpc(SOL, "getTransaction", [s, { encoding: "jsonParsed", maxSupportedTransactionVersion: 0 }]).catch(() => null);
+function nearFlow(t, acct) {
+  let y = 0n; for (const a of t.actions || []) { try { y += BigInt(a.deposit || 0); } catch {} }
+  const amt = units(y, 24), from = t.predecessor_account_id, to = t.receiver_account_id, out = from === acct;
+  const time = t.block_timestamp ? new Date(Number(BigInt(t.block_timestamp) / 1000000n)).toISOString() : null;
+  return mk("near", t.transaction_hash, time, from === to ? 0 : out ? -amt : amt, amt > 0 ? [{ address: out ? to : from, amount: amt }] : []);
+}
+
+async function scan(c, a) {
+  if (c === "bitcoin") {
+    const [info, txs] = await Promise.all([getJson(`${MP}/address/${a}`), getJson(`${MP}/address/${a}/txs`).catch(() => [])]);
+    const s = info.chain_stats, m = info.mempool_stats;
+    const flows = txs.slice(0, 25).map((tx) => {
+      let spent = 0, recv = 0; const src = new Map(), dst = new Map();
+      for (const v of tx.vin) { const x = v.prevout && v.prevout.scriptpubkey_address, val = (v.prevout && v.prevout.value) || 0; if (x === a) spent += val; else if (x) src.set(x, (src.get(x) || 0) + val); }
+      for (const v of tx.vout) { const x = v.scriptpubkey_address; if (x === a) recv += v.value; else if (x) dst.set(x, (dst.get(x) || 0) + v.value); }
+      const net = (recv - spent) / 1e8;
+      return mk("bitcoin", tx.txid, iso(tx.status.block_time), net, [...(net >= 0 ? src : dst)].map(([address, v]) => ({ address, amount: v / 1e8 })));
+    });
+    return { balance: (s.funded_txo_sum - s.spent_txo_sum + m.funded_txo_sum - m.spent_txo_sum) / 1e8, count: s.tx_count + m.tx_count, exact: true, flows, notes: [] };
+  }
+  if (c === "solana") {
+    const [bal, sigs] = await Promise.all([rpc(SOL, "getBalance", [a]), rpc(SOL, "getSignaturesForAddress", [a, { limit: 1000 }]).catch(() => [])]);
+    const rec = sigs.slice(0, 8).map((s) => s.signature), txs = await Promise.all(rec.map(solTx));
+    return { balance: bal.value / 1e9, count: sigs.length, exact: sigs.length < 1000, flows: txs.map((t, i) => solFlow(t, a, rec[i])).filter(Boolean), notes: sigs.length >= 1000 ? ["Solana count is a lower bound (1,000 per page)."] : [] };
+  }
+  if (c === "near") {
+    a = a.toLowerCase();
+    const view = await rpc("https://free.rpc.fastnear.com", "query", { request_type: "view_account", finality: "final", account_id: a }).catch(() => rpc("https://rpc.mainnet.near.org", "query", { request_type: "view_account", finality: "final", account_id: a }));
+    const [txns, cnt] = await Promise.all([getJson(`${NB}/account/${a}/txns?per_page=25`).catch(() => ({ txns: [] })), getJson(`${NB}/account/${a}/txns/count`).catch(() => null)]);
+    const n = Number(cnt && cnt.txns && cnt.txns[0] && cnt.txns[0].count);
+    return { balance: units(view.amount, 24), count: Number.isFinite(n) ? n : txns.txns.length, exact: Number.isFinite(n), flows: txns.txns.map((t) => nearFlow(t, a)), notes: [] };
+  }
+  const [bal, nonce] = await Promise.all([rpc(BSC, "eth_getBalance", [a, "latest"]), rpc(BSC, "eth_getTransactionCount", [a, "latest"])]);
+  return { balance: units(BigInt(bal), 18), count: Number(BigInt(nonce)), exact: false, flows: [], notes: ["BNB shows outgoing count only; keyless history is not available."] };
+}
+
+const RAW = "https://raw.githubusercontent.com";
+const OFAC = { bitcoin: ["XBT"], solana: ["SOL"], bnb: ["BSC", "ETH", "USDT"], near: [] };
+async function lists(c) {
+  const bad = new Map();
+  await Promise.all(OFAC[c].map((t) => fetch(`${RAW}/0xB10C/ofac-sanctioned-digital-currency-addresses/lists/sanctioned_addresses_${t}.txt`, { signal: AbortSignal.timeout(6000) })
+    .then((r) => r.text()).then((x) => x.split(/\r?\n/).forEach((l) => l.trim() && bad.set(norm(c, l.trim()), "OFAC sanctioned"))).catch(() => {})));
+  if (c === "bnb") await getJson(`${RAW}/scamsniffer/scam-database/main/blacklist/address.json`).then((arr) => arr.forEach((x) => bad.has(x) || bad.set(x.toLowerCase(), "ScamSniffer blacklist"))).catch(() => {});
+  return bad;
+}
+
+// ---------- example data (shown when live sources are unreachable) ----------
+function example() {
+  return {
+    chain: "bitcoin", address: "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", example: true,
+    data: { balance: 248597.59, count: 5590, exact: true, notes: ["Example data: this viewer blocks live blockchain requests. Open the downloaded HTML file in your browser for live scans."],
+      flows: [
+        { txid: "ex1", time: "2026-10-16T21:04:00Z", dir: "in", amount: 1203.4, tier: "main stream", splits: [{ address: "bc1qx9t2l3pyvv0mn6g6a8vexample01", amount: 803.4 }, { address: "3FupZp77ySr7jwoLYEJ9mwzJpvoNBXsBnE", amount: 400 }] },
+        { txid: "ex2", time: "2026-10-16T18:40:00Z", dir: "out", amount: 642.1, tier: "main stream", splits: [{ address: "bc1qa5wkgaew2dkv56kfvj49j0av5nml45x9ek9hz6", amount: 320 }, { address: "1FfmbHfnpaZjKFvyi1okTjJJusN455paPH", amount: 222.1 }, { address: "3LQUu4v9z6KNch71j7kbj8GPeAGUo1FW6a", amount: 100 }] },
+        { txid: "ex3", time: "2026-10-16T12:12:00Z", dir: "in", amount: 58.2, tier: "stream", splits: [{ address: "bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h", amount: 58.2 }] },
+        { txid: "ex4", time: "2026-10-15T23:51:00Z", dir: "out", amount: 12.75, tier: "stream", splits: [{ address: "123WBUDmSJv4GctdVEz6Qq6z8nXSKrJ4KX", amount: 12.75 }] },
+        { txid: "ex5", time: "2026-10-15T09:30:00Z", dir: "in", amount: 3.4, tier: "rivulet", splits: [{ address: "bc1qexamplesender0000000000000000000ab12", amount: 3.4 }] },
+      ] },
+    bad: new Map([["123WBUDmSJv4GctdVEz6Qq6z8nXSKrJ4KX", "OFAC sanctioned"]]),
+  };
+}
+const EXAMPLE_FEED = [
+  ["bitcoin", 519.3, "1Whale…8fQa", "bc1q…k2d9", 3], ["bnb", 12000, "0xF977…aceC", "0x3c78…91be", 1], ["solana", 85000, "9WzDXw…AWWM", "5Q544f…pge4", 2],
+  ["near", 420000, "relay.aurora", "aurora", 1], ["bitcoin", 88.1, "3M219K…xRP6", "bc1q…7h0l", 6], ["solana", 21500, "H8sMJS…3WjS", "GJRs4F…npKV", 1],
+].map(([chain, amount, from, to, splits]) => ({ chain, amount, from, to, splits, tier: tier(chain, amount) }));
+
+// ---------- river drawing ----------
+const cv = document.getElementById("river"), cx = cv.getContext("2d");
+let scene = null, t0 = performance.now();
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const WIDTH = { "main stream": 12, stream: 7, rivulet: 3.5, trickle: 1.5 };
+function bez(p, t) { const u = 1 - t; return [u*u*u*p[0]+3*u*u*t*p[2]+3*u*t*t*p[4]+t*t*t*p[6], u*u*u*p[1]+3*u*u*t*p[3]+3*u*t*t*p[5]+t*t*t*p[7]]; }
+function build(s) {
+  const W = cv.clientWidth, H = cv.clientHeight, L = [W * 0.5, H * 0.52];
+  const lake = lakeOf(s.chain, s.data.balance); const R = [6, 14, 26, 40, 56, 74][lake[1]] * Math.min(1, W / 700 + 0.25);
+  const ins = s.data.flows.filter((f) => f.dir === "in").slice(0, 7), outs = s.data.flows.filter((f) => f.dir !== "in").slice(0, 7);
+  const paths = [];
+  const flag = (a) => s.bad.get(norm(s.chain, a));
+  ins.forEach((f, i) => { const y = H * (0.12 + 0.76 * (i + 0.5) / ins.length); const dmn = f.splits.some((x) => flag(x.address));
+    paths.push({ f, w: WIDTH[f.tier], damned: dmn, pts: [W * 0.03, y, W * 0.22, y, W * 0.3, L[1], L[0] - R, L[1]], tag: short(f.splits[0] && f.splits[0].address), amt: f.amount, side: "l" }); });
+  outs.forEach((f, i) => { const y = H * (0.12 + 0.76 * (i + 0.5) / outs.length); const end = W * 0.74;
+    paths.push({ f, w: WIDTH[f.tier], damned: false, pts: [L[0] + R, L[1], W * 0.62, L[1], W * 0.62, y, end, y], amt: f.amount, side: "trunk" });
+    const sp = f.splits.slice(0, 4);
+    sp.forEach((x, j) => { const yy = y + (j - (sp.length - 1) / 2) * Math.min(22, H / 14 / Math.max(1, outs.length / 3));
+      paths.push({ f, w: Math.max(1.2, WIDTH[tier(s.chain, x.amount)] * 0.8), damned: !!flag(x.address), pts: [end, y, end + W * 0.06, y, end + W * 0.08, yy, W * 0.95, yy], tag: short(x.address), amt: x.amount, side: "r" }); }); });
+  const h = health(s.data.count);
+  return { W, H, L, R, lake, paths, speed: h[4], s };
+}
+function resize() { const d = devicePixelRatio || 1; cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; cx.setTransform(d, 0, 0, d, 0, 0); if (scene) scene = build(scene.s); }
+function draw(now) {
+  const W = cv.clientWidth, H = cv.clientHeight, T = (now - t0) / 1000;
+  cx.clearRect(0, 0, W, H);
+  if (!scene) { cx.fillStyle = css("--ash"); cx.font = "italic 15px Spectral, Georgia, serif"; cx.textAlign = "center"; cx.fillText("The river is still. Paste a wallet above to wake it.", W / 2, H / 2); requestAnimationFrame(draw); return; }
+  const { L, R, paths, speed, lake } = scene, water = css("--water"), blood = css("--blood"), bone = css("--bone"), ash = css("--ash"), lantern = css("--lantern");
+  for (const p of paths) {
+    cx.lineCap = "round"; cx.strokeStyle = p.damned ? blood : water; cx.globalAlpha = 0.28; cx.lineWidth = p.w;
+    cx.beginPath(); cx.moveTo(p.pts[0], p.pts[1]); cx.bezierCurveTo(...p.pts.slice(2)); cx.stroke();
+    cx.globalAlpha = 0.9; const n = Math.max(1, Math.round(p.w / 2.5 + speed * 4));
+    for (let k = 0; k < n; k++) { const t = ((T * (0.05 + speed * 0.22)) + k / n) % 1; const [x, y] = bez(p.pts, t);
+      cx.fillStyle = p.damned ? blood : bone; cx.beginPath(); cx.arc(x, y, Math.max(1, p.w / 4), 0, 7); cx.fill(); }
+    cx.globalAlpha = 1;
+    if (p.tag) { cx.font = "11px 'IBM Plex Mono', monospace"; cx.fillStyle = p.damned ? blood : ash;
+      const lbl = `${p.damned ? "☠ " : ""}${p.tag} · ${fmt(p.amt)}`;
+      if (p.side === "l") { cx.textAlign = "left"; cx.fillText(lbl, p.pts[0], p.pts[1] - p.w / 2 - 5); }
+      else { cx.textAlign = "right"; cx.fillText(lbl, W - 6, p.pts[7] - p.w / 2 - 4); } }
+  }
+  const g = cx.createRadialGradient(L[0], L[1], 2, L[0], L[1], R + 6);
+  g.addColorStop(0, lantern); g.addColorStop(0.25, water); g.addColorStop(1, "rgba(0,0,0,0)");
+  cx.fillStyle = g; cx.beginPath(); cx.ellipse(L[0], L[1], R + 6 + Math.sin(T * 1.4) * 1.5, (R + 6) * 0.72, 0, 0, 7); cx.fill();
+  cx.fillStyle = bone; cx.textAlign = "center"; cx.font = "13px 'Marcellus SC', Georgia, serif";
+  cx.fillText(lake[0], L[0], L[1] + (R + 6) * 0.72 + 18);
+  requestAnimationFrame(draw);
+}
+addEventListener("resize", resize); resize(); requestAnimationFrame(draw);
+
+// ---------- background currents ----------
+const bg = document.getElementById("currentsBg"), bx = bg.getContext("2d"); let strands = [];
+function bgResize() { bg.width = innerWidth; bg.height = innerHeight; }
+function setStrands(list) { strands = list.slice(0, 14).map((c, i) => ({ y: (i + 0.5) / 14, w: WIDTH[c.tier] * 0.6 + 0.6, sp: 0.4 + Math.random() * 0.6, ph: Math.random() * 6, main: c.tier === "main stream" })); }
+function bgDraw(now) {
+  const T = now / 1000, W = bg.width, H = bg.height; bx.clearRect(0, 0, W, H);
+  for (const s of strands) { bx.strokeStyle = s.main ? css("--lantern") : css("--reed"); bx.globalAlpha = s.main ? 0.22 : 0.35; bx.lineWidth = s.w; bx.beginPath();
+    for (let x = 0; x <= W; x += 24) { const y = s.y * H + Math.sin(x / 180 + T * s.sp + s.ph) * 14; x ? bx.lineTo(x, y) : bx.moveTo(x, y); } bx.stroke(); }
+  bx.globalAlpha = 1; requestAnimationFrame(bgDraw);
+}
+addEventListener("resize", bgResize); bgResize(); requestAnimationFrame(bgDraw);
+
+// ---------- UI ----------
+const $ = (id) => document.getElementById(id);
+let live = null;
+function setMode(isLive) { live = isLive; $("mode").className = "mode " + (isLive ? "live" : "demo"); $("mode").textContent = isLive ? "Live chain data" : "Example data"; }
+function render(s) {
+  const c = s.chain, sym = CHAINS[c].sym, d = s.data, h = health(d.count), lake = lakeOf(c, d.balance);
+  const lab = label(c, s.address);
+  $("who").innerHTML = ""; const b = document.createElement("b"); b.textContent = `${c.toUpperCase()} · ${short(s.address)}`; $("who").append(b, lab ? `  ${lab}` : "");
+  $("when").textContent = s.example ? "example" : "scanned " + new Date().toLocaleTimeString();
+  $("nick").textContent = h[2]; $("txc").textContent = (d.exact ? "" : "≥ ") + fmt(d.count) + " · " + h[3];
+  $("bal").textContent = fmt(d.balance) + " " + sym; $("lake").textContent = lake[0];
+  const assoc = new Map();
+  for (const f of d.flows) for (const x of f.splits) { const k = norm(c, x.address); if (k === norm(c, s.address)) continue;
+    const e = assoc.get(k) || { a: x.address, amt: 0, flag: s.bad.get(k) }; e.amt += x.amount; assoc.set(k, e); }
+  const list = [...assoc.values()].sort((p, q) => (q.flag ? 1 : 0) - (p.flag ? 1 : 0) || q.amt - p.amt);
+  const flagged = list.filter((x) => x.flag), self = s.bad.get(norm(c, s.address));
+  const v = self ? "damned" : flagged.length ? "tainted" : "clean";
+  $("verdict").className = "verdict " + v; $("verdict").textContent = v === "damned" ? "Damned" : v === "tainted" ? "Tainted" : "Clean";
+  $("verdictNote").textContent = v === "damned" ? `This wallet itself is listed: ${self}.` : v === "tainted" ? `${flagged.length} associated wallet${flagged.length > 1 ? "s are" : " is"} listed as sanctioned or scam-linked.` : `None of ${list.length} recent associates appear on the sanctions or scam lists${c === "near" ? " (no public scam list covers NEAR)" : ""}.`;
+  if (d.notes.length) $("verdictNote").textContent += " " + d.notes.join(" ");
+  $("assoc").replaceChildren(...(list.length ? list.slice(0, 40) : [{ a: "No counterparties visible", amt: null }]).map((x) => { const li = document.createElement("li"); if (x.flag) li.className = "bad";
+    const l = document.createElement("span"); l.textContent = (x.flag ? "☠ " : "") + short(x.a) + (label(c, x.a) ? " · " + label(c, x.a) : "") + (x.flag ? " · " + x.flag : "");
+    const r = document.createElement("span"); r.className = "amt"; r.textContent = x.amt == null ? "" : fmt(x.amt) + " " + sym; li.append(l, r); return li; }));
+  scene = build(s);
+}
+async function runScan(addr, chain) {
+  addr = addr.trim(); const c = chain || detect(addr);
+  if (!c) { $("verdictNote").textContent = "That address doesn't match Bitcoin, Solana, NEAR or BNB Chain formats. Pick the network from the list and try again."; return; }
+  $("go").textContent = "Crossing…"; $("go").disabled = true;
+  try { const [data, bad] = await Promise.all([scan(c, addr), lists(c)]); setMode(true); render({ chain: c, address: addr, data, bad }); }
+  catch (e) { setMode(false); const ex = example(); render(ex); $("verdictNote").textContent += ` (Live lookup for ${short(addr)} failed: ${e.message}.)`; }
+  finally { $("go").textContent = "Cross the river"; $("go").disabled = false; }
+}
+$("scanForm").addEventListener("submit", (e) => { e.preventDefault(); runScan($("addr").value, $("chain").value); });
+KNOWN.forEach(([c, a, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = `${l} (${CHAINS[c].sym})`;
+  b.addEventListener("click", () => { $("addr").value = a; $("chain").value = c; runScan(a, c); }); $("samples").append(b); });
+
+async function currents() {
+  const out = [];
+  const jobs = [
+    getJson(`${MP}/v1/blocks`).then((bl) => getJson(`${MP}/block/${bl[0].id}/txs/0`)).then((txs) => txs.filter((t) => !t.vin[0].is_coinbase).forEach((t) => {
+      const amt = t.vout.reduce((s, o) => s + o.value, 0) / 1e8; out.push({ chain: "bitcoin", amount: amt, from: short(t.vin[0].prevout && t.vin[0].prevout.scriptpubkey_address), to: short(t.vout[0].scriptpubkey_address), splits: t.vout.length }); })),
+    rpc(BSC, "eth_getBlockByNumber", ["latest", true]).then((b) => b.transactions.forEach((t) => out.push({ chain: "bnb", amount: units(BigInt(t.value), 18), from: short(t.from), to: short(t.to), splits: 1 }))),
+    getJson(`${NB}/txns?per_page=25`).then((b) => b.txns.forEach((t) => { const f = nearFlow(t, t.receiver_account_id); out.push({ chain: "near", amount: f.amount, from: t.predecessor_account_id, to: t.receiver_account_id, splits: 1 }); })),
+    Promise.all(KNOWN.filter((k) => k[0] === "solana").map(([, a]) => rpc(SOL, "getSignaturesForAddress", [a, { limit: 3 }]).then((sg) => Promise.all(sg.map((x) => solTx(x.signature).then((tx) => {
+      const f = solFlow(tx, a, x.signature); if (f) out.push({ chain: "solana", amount: f.amount, from: f.dir === "out" ? short(a) : short(f.splits[0] && f.splits[0].address), to: f.dir === "out" ? short(f.splits[0] && f.splits[0].address) : short(a), splits: f.splits.length }); })))))),
+  ];
+  const res = await Promise.allSettled(jobs);
+  if (!out.length) { if (live === null) setMode(false); return EXAMPLE_FEED; }
+  if (res.some((r) => r.status === "fulfilled")) setMode(true);
+  return out.filter((x) => x.amount > 0).map((x) => ({ ...x, tier: tier(x.chain, x.amount) })).sort((a, b) => b.amount / CHAINS[b.chain].flow[1] - a.amount / CHAINS[a.chain].flow[1]).slice(0, 14);
+}
+async function refreshFeed() {
+  const list = await currents().catch(() => EXAMPLE_FEED); setStrands(list);
+  $("feed").replaceChildren(...list.map((x) => { const li = document.createElement("li"); if (x.tier === "main stream") li.className = "main";
+    const l = document.createElement("span"); const ch = document.createElement("span"); ch.className = "ch"; ch.textContent = x.chain.toUpperCase().padEnd(8);
+    l.append(ch, `${x.tier === "main stream" ? "━━━ " : x.tier === "stream" ? "━━ " : "─ "}${x.from} ⇢ ${x.to}${x.splits > 1 ? ` · ${x.splits} waterways` : ""}`);
+    const r = document.createElement("span"); r.className = "amt"; r.textContent = fmt(x.amount) + " " + CHAINS[x.chain].sym; li.append(l, r); return li; }));
+}
+refreshFeed(); setInterval(refreshFeed, 60000);
+// Opening state: scan the Binance cold wallet live, or show the marked example if this viewer blocks the network.
+runScan(KNOWN[0][1], "bitcoin");
+</script>
